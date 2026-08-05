@@ -39,7 +39,7 @@ export default defineConfig(async () => {
       strictPort: false,
       fs: {
         // Allow serving files from the entire package tree (needed when
-        // installed inside node_modules via npx).
+        // installed inside node_modules via pnpx).
         allow: ['..'],
       },
       hmr: {
