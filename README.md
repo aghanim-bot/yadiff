@@ -17,6 +17,14 @@ Run the latest version of this fork directly from GitHub with `pnpx`:
 pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff
 ```
 
+To pin the yadiff package itself to a specific commit, add the commit as the GitHub package-spec fragment:
+
+```bash
+pnpx --config.dangerously-allow-all-builds=true 'github:aghanim-bot/yadiff#87f04c7033f42f05d3dd3d6691cbbb25dec18fb8'
+```
+
+The fragment after `#` may be a full commit SHA; it selects the yadiff version to run, not the repository diff target.
+
 The explicit `github:aghanim-bot/yadiff` package spec fetches this repository; it does not resolve or install the npm-published `@baggiiiie/yadiff` package. The command-level build permission lets pnpx run this repository's `prepare` script, which compiles the browser assets during the temporary git dependency installation.
 
 The command starts a local server in the background, opens the browser, acquires a diff from the selected source, and serves the patch to the browser. With no target, it defaults to `--working` (`jj @` in a jj workspace, otherwise `git diff`). The shell command exits after launch. When there are no browser sessions for one minute, the local server exits automatically.
