@@ -131,7 +131,7 @@ export function useDiffViewerModel() {
     const viewerScrollTopRef = useRef(0);
     const activeFileIndexRef = useRef(0);
     const [scrollTrigger, triggerScroll] = useReducer(increment, 0);
-    const viewerRef = useRef<CodeViewHandle<Review>>(null);
+    const viewerRef = useRef<CodeViewHandle<Review, undefined>>(null);
     const nextReviewIdRef = useRef(0);
     const commitRequestIdRef = useRef(0);
     const onTreeSelectionRef = useRef<(paths: readonly string[]) => void>(() => undefined);
