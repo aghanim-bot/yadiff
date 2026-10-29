@@ -1,3 +1,4 @@
+import type { ParsedPatch } from '@pierre/diffs';
 import type { CodeViewHandle } from '@pierre/diffs/react';
 import { useFileTree, useFileTreeSearch } from '@pierre/trees/react';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
@@ -7,7 +8,7 @@ import {
     parseDiffPatch,
     type ProjectedFileIdentity,
 } from './diffProjection';
-import { fetchCommitPatchText, fetchDiffMetadata, fetchPatchText } from './diffClient';
+import { fetchCommitPatchText, fetchDiffMetadata, fetchHydratedDiff, fetchPatchText } from './diffClient';
 import {
     byteLength,
     formatBytes,
@@ -16,9 +17,14 @@ import {
     formatStatusDetails,
     getLargeDiffLabel,
 } from './format';
+import { loadPreferences, savePreferences } from './preferences';
 import { isFileReviewTarget } from './reviews';
 import type { DiffResponse, DiffStyle, DraftReview, LoadState, Overflow, Review, SavedReview } from './types';
 import { increment, modulo } from './utils';
+
+function defaultDiffStyle(): DiffStyle {
+    return window.matchMedia('(max-width: 800px)').matches ? 'unified' : 'split';
+}
 
 function useAppState() {
     const [loadState, setLoadState] = useState<LoadState>('loading');
@@ -28,10 +34,8 @@ function useAppState() {
     const [response, setResponse] = useState<DiffResponse | null>(null);
     const [patch, setPatch] = useState('');
     const [loadedPatchBytes, setLoadedPatchBytes] = useState<number | undefined>(undefined);
-    const [diffStyle, setDiffStyle] = useState<DiffStyle>(() =>
-        window.matchMedia('(max-width: 800px)').matches ? 'unified' : 'split'
-    );
-    const [overflow, setOverflow] = useState<Overflow>('scroll');
+    const [diffStyle, setDiffStyleRaw] = useState<DiffStyle>(() => loadPreferences().diffStyle ?? defaultDiffStyle());
+    const [overflow, setOverflowRaw] = useState<Overflow>(() => loadPreferences().overflow ?? 'scroll');
     const [showBackgrounds, setShowBackgrounds] = useState(true);
     const [lineNumbers, setLineNumbers] = useState(true);
     const [collapsedIds, setCollapsedIds] = useState<Set<ProjectedFileIdentity>>(() => new Set());
@@ -42,6 +46,20 @@ function useAppState() {
     const [treeViewHidden, setTreeViewHidden] = useState(false);
     const [activeCommitId, setActiveCommitId] = useState<string | null>(null);
     const [commitPatch, setCommitPatch] = useState<string | null>(null);
+    const setDiffStyle: typeof setDiffStyleRaw = useCallback((next) => {
+        setDiffStyleRaw((previous) => {
+            const value = typeof next === 'function' ? next(previous) : next;
+            savePreferences({ diffStyle: value });
+            return value;
+        });
+    }, []);
+    const setOverflow: typeof setOverflowRaw = useCallback((next) => {
+        setOverflowRaw((previous) => {
+            const value = typeof next === 'function' ? next(previous) : next;
+            savePreferences({ overflow: value });
+            return value;
+        });
+    }, []);
 
     return {
         activeCommitId,
@@ -146,6 +164,7 @@ export function useDiffViewerModel() {
         stickyFolders: true,
     });
     const treeSearch = useFileTreeSearch(treeModel);
+    const [hydratedDiff, setHydratedDiff] = useState<{ key: string; patches: ParsedPatch[] } | null>(null);
 
     useEffect(() => {
         const session = new EventSource('/api/session');
@@ -238,7 +257,32 @@ export function useDiffViewerModel() {
 
     const activePatch = activeCommitId != null ? (commitPatch ?? '') : patch;
     const diffKey = response == null ? 'empty' : activeCommitId ?? response.target;
-    const parsedPatches = useMemo(() => parseDiffPatch(activePatch, diffKey), [activePatch, diffKey]);
+
+    useEffect(() => {
+        if (response?.source === 'github' || loadState !== 'ready' || activePatch === '' || (activeCommitId != null && commitPatch == null)) {
+            setHydratedDiff(null);
+            return;
+        }
+
+        let cancelled = false;
+        setHydratedDiff(null);
+        void fetchHydratedDiff(activeCommitId).then((hydrated) => {
+            if (cancelled || hydrated.hydratedFiles === 0) {
+                return;
+            }
+            setHydratedDiff({ key: diffKey, patches: hydrated.patches });
+        }, () => {
+            // Keep the patch-only diff if full file hydration is unavailable.
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [activeCommitId, activePatch, commitPatch, diffKey, loadState, response?.source]);
+
+    const parsedPatches = useMemo(() => (
+        hydratedDiff?.key === diffKey ? hydratedDiff.patches : parseDiffPatch(activePatch, diffKey)
+    ), [activePatch, diffKey, hydratedDiff]);
     const renderedLineReviews = useMemo(() => reviews.filter((review) => !isFileReviewTarget(review.target)), [reviews]);
     const renderedLineDraftReview = draftReview != null && !isFileReviewTarget(draftReview.target) ? draftReview : null;
     const parsed = useMemo(() => createDiffProjection<Review>({
