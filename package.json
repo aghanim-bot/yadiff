@@ -43,10 +43,10 @@
     "check:dist": "npm run build && git diff --exit-code -- dist"
   },
   "dependencies": {
+    "@pierre/diffs": "^1.5.1",
     "express": "^5.2.0"
   },
   "devDependencies": {
-    "@pierre/diffs": "^1.5.1",
     "@pierre/trees": "^1.0.0-beta.6",
     "@types/express": "^5.0.5",
     "@types/node": "^26.6.3",
