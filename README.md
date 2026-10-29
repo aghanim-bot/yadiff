@@ -14,18 +14,18 @@ A browser diff viewer for local git/jj diffs and GitHub PRs. It uses [pierrecomp
 Run the latest version of this fork directly from GitHub with `pnpx`:
 
 ```bash
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff
+pnpx github:aghanim-bot/yadiff
 ```
 
 To pin the yadiff package itself to a specific commit, add the commit as the GitHub package-spec fragment:
 
 ```bash
-pnpx --config.dangerously-allow-all-builds=true 'github:aghanim-bot/yadiff#87f04c7033f42f05d3dd3d6691cbbb25dec18fb8'
+pnpx 'github:aghanim-bot/yadiff#fb706f8fa84781edddb0dd2f32dd03d747613e68'
 ```
 
 The fragment after `#` may be a full commit SHA; it selects the yadiff version to run, not the repository diff target.
 
-The explicit `github:aghanim-bot/yadiff` package spec fetches this repository; it does not resolve or install the npm-published `@baggiiiie/yadiff` package. The command-level build permission lets pnpx run this repository's `prepare` script, which compiles the browser assets during the temporary git dependency installation.
+The explicit `github:aghanim-bot/yadiff` package spec fetches this repository; it does not resolve or install the npm-published `@baggiiiie/yadiff` package. Browser assets are committed in `dist/`, so running from GitHub does not require install-time build-script permission.
 
 The command starts a local server in the background, opens the browser, acquires a diff from the selected source, and serves the patch to the browser. With no target, it defaults to `--working` (`jj @` in a jj workspace, otherwise `git diff`). The shell command exits after launch. When there are no browser sessions for one minute, the local server exits automatically.
 
@@ -37,34 +37,34 @@ Git:
 
 ```bash
 # No target: unstaged tracked-file changes
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff
+pnpx github:aghanim-bot/yadiff
 
 # A ref, two-dot range, or merge-base (three-dot) range
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff HEAD
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff main..feature
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff main...HEAD
+pnpx github:aghanim-bot/yadiff HEAD
+pnpx github:aghanim-bot/yadiff main..feature
+pnpx github:aghanim-bot/yadiff main...HEAD
 
 # Explicit diff modes
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff --working
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff --staged
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff --dirty
+pnpx github:aghanim-bot/yadiff --working
+pnpx github:aghanim-bot/yadiff --staged
+pnpx github:aghanim-bot/yadiff --dirty
 
 # Run against a repository at another path
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff main...HEAD --repo ../some-repo
+pnpx github:aghanim-bot/yadiff main...HEAD --repo ../some-repo
 ```
 
 jj:
 
 ```bash
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff @ --repo ../some-jj-repo
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff 'mine() & mutable()' --vcs jj
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff --working --jj --repo ../some-jj-repo
+pnpx github:aghanim-bot/yadiff @ --repo ../some-jj-repo
+pnpx github:aghanim-bot/yadiff 'mine() & mutable()' --vcs jj
+pnpx github:aghanim-bot/yadiff --working --jj --repo ../some-jj-repo
 ```
 
 GitHub:
 
 ```bash
-pnpx --config.dangerously-allow-all-builds=true github:aghanim-bot/yadiff https://github.com/oven-sh/bun/pull/30412
+pnpx github:aghanim-bot/yadiff https://github.com/oven-sh/bun/pull/30412
 ```
 
 Passing bun test:
