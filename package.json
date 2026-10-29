@@ -40,7 +40,7 @@
     "dev": "node ./bin/yadiff.js --dev",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
-    "prepare": "npm run build"
+    "check:dist": "npm run build && git diff --exit-code -- dist"
   },
   "dependencies": {
     "express": "^5.2.0"
