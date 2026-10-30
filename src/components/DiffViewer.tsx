@@ -1,11 +1,11 @@
-import { CodeView } from '@pierre/diffs/react';
+import { CodeView, type CodeViewAnnotationArgs } from '@pierre/diffs/react';
 import { useMemo } from 'react';
 
 import { REVIEW_UNSAFE_CSS } from '../constants';
 import type { ProjectedFileIdentity } from '../diffProjection';
 import { createDraftReview, isFileReviewTarget, reviewMatchesFile, saveDraftReview } from '../reviews';
 import type { DiffViewerModel } from '../useDiffViewerModel';
-import type { SavedReview } from '../types';
+import type { Review, SavedReview } from '../types';
 import { useThemeContext } from '../useTheme';
 import { DiffHeader } from './DiffHeader';
 import { DraftReviewBox, SavedReviewAnnotation } from './ReviewAnnotations';
@@ -116,7 +116,7 @@ export function DiffViewer({
                             setCopyStatus('idle');
                         },
                     }}
-                    renderAnnotation={(annotation) => {
+                    renderAnnotation={(...[annotation]: CodeViewAnnotationArgs<Review>) => {
                         const review = annotation.metadata;
                         if (review == null) {
                             return null;
