@@ -43,7 +43,7 @@
     "check:dist": "npm run build && node ./scripts/check-dist.js"
   },
   "dependencies": {
-    "@pierre/diffs": "^1.5.1",
+    "@pierre/diffs": "^1.6.1",
     "express": "^5.3.0"
   },
   "devDependencies": {
