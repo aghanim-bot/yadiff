@@ -474,7 +474,9 @@ async function runServer(args) {
 }
 
 async function createHydratedDiffResponse(target, patch, cacheKeyPrefix) {
-  const parsedPatches = parsePatchFiles(patch, encodeURIComponent(cacheKeyPrefix));
+  const parsedPatches = parsePatchFiles(patch, {
+    cacheKeyPrefix: encodeURIComponent(cacheKeyPrefix),
+  });
   if (typeof target.getFileContents !== 'function') {
     return { patches: parsedPatches, hydratedFiles: 0, totalFiles: countParsedFiles(parsedPatches) };
   }

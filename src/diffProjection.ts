@@ -64,7 +64,7 @@ export interface DiffProjection<TReview extends DiffProjectionReview> {
 }
 
 export function parseDiffPatch(patch: string, diffKey: string): ParsedPatch[] {
-  return parsePatchFiles(patch, encodeURIComponent(diffKey));
+  return parsePatchFiles(patch, { cacheKeyPrefix: encodeURIComponent(diffKey) });
 }
 
 export function createDiffProjection<TReview extends DiffProjectionReview>({
